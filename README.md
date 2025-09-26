@@ -20,10 +20,9 @@ Araç marka görsellerini **33 sınıfta** sınıflandıran derin öğrenme proj
 - [6. Hiperparametre Optimizasyonu](#6-hiperparametre-optimizasyonu)
 - [7. Sonuçlar](#7-sonuçlar)
 - [8. Hata Analizi ve Gelecek Çalışmalar](#8-hata-analizi-ve-gelecek-çalışmalar)
-- [9. Proje Yapısı](#9-proje-yapısı)
-- [10. Hızlı Başlangıç (Kaggle)](#10-hızlı-başlangıç-kaggle)
-- [11. Bağlantılar](#11-bağlantılar)
-- [12. Lisans](#12-lisans)
+- [9. Hızlı Başlangıç (Kaggle)](#10-hızlı-başlangıç-kaggle)
+- [10. Bağlantılar](#11-bağlantılar)
+- [11. Lisans](#12-lisans)
 
 ---
 
@@ -98,3 +97,57 @@ Logo, ızgara ve far konturları gibi ayırt edici bölgeler ön plana çıkar.
 Tek görsel tahmini için notebook fonksiyonu:
 ```python
 predict_image("<gorsel_yolu>.jpg", top_k=5)
+```
+
+---
+
+## 6. Hiperparametre Optimizasyonu
+`learning rate`, `dropout` ve `batch size` üzerinde tarama yapılır; küçük bir ızgara/rasgele arama ile en iyi `val_accuracy` belirlenir. Deney sonuçları ilgili bölümde özetlenir.
+
+---
+
+## 7. Sonuçlar
+- **Test Accuracy:** …  
+- **Macro F1:** …  
+- **Karışan sınıflar:** …  
+- **Grad-CAM gözlemleri:** Modelin odaklandığı bölgeler (logo, ızgara, far vb.) …
+
+Eğitim eğrileri ve Confusion Matrix görselleri:
+```
+images/train_curves.png
+images/confusion_matrix.png
+```
+
+---
+
+## 8. Hata Analizi ve Gelecek Çalışmalar
+- Benzer gövde/renk/çekim açısı nedeniyle karışan sınıflar  
+- Sınıf dengesizliği için class weight/focal loss yaklaşımları  
+- Daha güçlü backbone ile fine-tuning  
+- Veri kalitesi iyileştirme (bulanık veya etiketi hatalı imgelerin temizliği)
+
+---
+
+
+
+
+
+## 9. Hızlı Başlangıç (Kaggle)
+1. **Settings → Accelerator → GPU**  
+2. **Add Data:** `ahmedelsany/car-brand-classification-dataset`  
+3. **Restart & Run All**
+
+Çalışma sonunda üretilen dosyalar:
+- `best_cnn.keras`  
+- `label_map.json`  
+- `history.csv`
+
+---
+
+## 10. Bağlantılar
+- **Veri seti:** https://www.kaggle.com/datasets/ahmedelsany/car-brand-classification-dataset
+
+---
+
+## 11. Lisans
+MIT License
