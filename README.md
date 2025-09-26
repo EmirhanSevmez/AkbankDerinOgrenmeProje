@@ -35,8 +35,6 @@ Bu repo, **Car Brand Classification (33 sınıf)** problemi için hazırlanan de
 
 # Linkler
 
-- **Kaggle Notebook:** _linkinizi buraya ekleyin_  
-- (İsteğe bağlı) Ek deney notları / raporlar
 
 ---
 
