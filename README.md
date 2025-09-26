@@ -146,6 +146,7 @@ images/confusion_matrix.png
 
 ## 10. Bağlantılar
 - **Veri seti:** https://www.kaggle.com/datasets/ahmedelsany/car-brand-classification-dataset
+- **Notebook:** https://www.kaggle.com/code/emirhansevmez/notebook4a91eed605
 
 ---
 
