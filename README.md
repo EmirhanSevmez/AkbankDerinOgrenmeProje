@@ -1,51 +1,100 @@
-# Car Brand Classification — CNN (Akbank Derin Öğrenme Bootcamp)
+# Car Brand Classification — Akbank Derin Öğrenme Bootcamp
 
-Bu repo, **Car Brand Classification (33 sınıf)** problemi için hazırlanan derin öğrenme projesinin kod ve dokümantasyonunu içerir. Proje; veri önişleme, veri çoğaltma (augmentation), **CNN** tabanlı model eğitimi, değerlendirme (accuracy/loss grafikleri, **Confusion Matrix** & **Classification Report**) ve **Grad-CAM** görselleştirmelerini kapsar. Opsiyonel olarak **Transfer Learning** ve küçük bir **HPO** (hyperparameter optimization) denemesi de eklenebilir.
+Araç marka görsellerini **33 sınıfta** sınıflandıran derin öğrenme projesi.  
+Çalışma; veri önişleme ve **augmentation**, **CNN** tabanlı model eğitimi, eğitim eğrileri (accuracy/loss), **Confusion Matrix** & **Classification Report** ile değerlendirme ve karar bölgelerini açıklamak için **Grad-CAM** görselleştirmelerini içerir.
 
-
-# Giriş
-
-- **Amaç:** Araç marka görsellerini (Audi, BMW, Ford, Mercedes, Tesla vb.) çok sınıflı bir CNN ile sınıflandırmak.
-- **Veri seti:** Kaggle — `ahmedelsany/car-brand-classification-dataset` (yaklaşık 16K görsel, 33 sınıf).
-- **Önişleme:** 224×224 yeniden boyutlandırma, `[0,1]` normalize; **train/val/test = 80/10/10 (stratified)**.
-- **Augmentation:** RandomFlip, RandomRotation, RandomZoom, RandomContrast.
-- **Model (Baseline CNN):** Conv2D + MaxPooling blokları, GlobalAveragePooling2D, Dropout(0.4), Dense(softmax).
-- **Callback’ler:** ModelCheckpoint (en iyi `val_accuracy`), ReduceLROnPlateau, EarlyStopping.
-- **Opsiyonel:** EfficientNetB0 / ResNet50 ile Transfer Learning, küçük HPO ızgarası (lr, dropout, batch).
-
-
-# Metrikler
-
-- Eğitim sonrası **Accuracy/Loss** grafikleri
-- Test setinde **Confusion Matrix** ve **Classification Report**
-- Örnek tek görüntü tahmini: `predict_image("<path>.jpg", top_k=5)`
-
-# Ekler
-
-- (Opsiyonel) **UI/**: Streamlit ile basit bir arayüz ve demo (sınıf tahmini + Grad-CAM görselleri).  
-
-# Sonuç ve Gelecek Çalışmalar
-
-- Sonuçların özeti (en iyi doğruluk, hata analizi).
-- Gelecek adımlar:
-  - Daha güçlü backbone ile **fine-tuning** (EfficientNet/ResNet).
-  - **Keras Tuner** ile kapsamlı HPO.
-  - Veri dengeleme/temizleme, domain-spesifik augmentasyon.
-  - (Opsiyonel) Streamlit/Gradio ile web demo, Docker paketleme.
-
-# Linkler
-
-https://www.kaggle.com/code/emirhansevmez/notebook4a91eed605
 ---
 
-## Nasıl Çalıştırılır (Kaggle)
+## İçindekiler
+- [1. Problem Tanımı](#1-problem-tanımı)
+- [2. Veri Seti](#2-veri-seti)
+- [3. Yöntem](#3-yöntem)
+  - [3.1. Önişleme & Augmentation](#31-önişleme--augmentation)
+  - [3.2. Mimari (CNN)](#32-mimari-cnn)
+  - [3.3. Eğitim Ayarları](#33-eğitim-ayarları)
+  - [3.4. Callback’ler](#34-callbackler)
+- [4. Değerlendirme](#4-değerlendirme)
+  - [4.1. Metrikler](#41-metrikler)
+  - [4.2. Grad-CAM](#42-grad-cam)
+- [5. Deney Tasarımı ve Tekrarlanabilirlik](#5-deney-tasarımı-ve-tekrarlanabilirlik)
+- [6. Hiperparametre Optimizasyonu](#6-hiperparametre-optimizasyonu)
+- [7. Sonuçlar](#7-sonuçlar)
+- [8. Hata Analizi ve Gelecek Çalışmalar](#8-hata-analizi-ve-gelecek-çalışmalar)
+- [9. Proje Yapısı](#9-proje-yapısı)
+- [10. Hızlı Başlangıç (Kaggle)](#10-hızlı-başlangıç-kaggle)
+- [11. Bağlantılar](#11-bağlantılar)
+- [12. Lisans](#12-lisans)
 
-1. **Settings → Accelerator → GPU** seçin.  
-2. **Add Data** → `ahmedelsany/car-brand-classification-dataset` ekleyin.  
-3. Notebook’u **Restart & Run All** ile çalıştırın.  
-4. Çıktılar:
-   - `best_cnn.keras` — en iyi model ağırlıkları  
-   - `label_map.json` — sınıf indeks-isim eşlemeleri  
-   - `history.csv` — epoch metrikleri (acc/loss)
+---
 
+## 1. Problem Tanımı
+Amaç; farklı araç markalarına ait görselleri **çok sınıflı** bir sınıflandırma modeliyle doğru şekilde etiketlemektir. Bu problem, logo, ızgara ve far gibi **ince ayrıntıların** ayrıştırılmasını gerektirir. Bu nedenle veri çoğaltma, düzenli eğitim ve açıklanabilirlik (Grad-CAM) önemlidir.
 
+---
+
+## 2. Veri Seti
+- **Kaynak:** Kaggle — *Car Brand Classification* (ahmedelsany)
+- **Sınıf sayısı:** 33  
+- **Örnek sayısı:** ~16.000 görsel  
+- **Kullanım:** Kaggle Notebook’ta “Add Data” ile `ahmedelsany/car-brand-classification-dataset`
+
+---
+
+## 3. Yöntem
+
+### 3.1. Önişleme & Augmentation
+- **Girdi boyutu:** `224×224` (RGB)  
+- **Normalizasyon:** `tf.image` ile `[0, 1]` aralığı  
+- **Bölme:** Stratified **train/val/test = 80/10/10**  
+- **Augmentation:** `RandomFlip('horizontal')`, `RandomRotation(0.1)`, `RandomZoom(0.1)`, `RandomContrast(0.1)`
+
+### 3.2. Mimari (CNN)
+Aşağıdaki yapı kullanılır:
+
+| Blok | Katmanlar | Açıklama |
+|------|-----------|----------|
+| 1 | Conv2D(32, 3, ReLU) → MaxPool | Temel kenar/doku özellikleri |
+| 2 | Conv2D(64, 3, ReLU) → MaxPool | Orta seviye özellikler |
+| 3 | Conv2D(128, 3, ReLU) → **Conv2D(128, 3, ReLU, name='last_conv')** → MaxPool | Grad-CAM için `last_conv` |
+| Çıkış | GlobalAveragePooling2D → Dropout(0.4) → Dense(33, Softmax) | Sınıf olasılıkları |
+
+### 3.3. Eğitim Ayarları
+- **Optimizer:** Adam (`lr = 1e-3`)  
+- **Batch size:** 32  
+- **Epoch:** 20 (erken durma etkin)  
+- **Seed:** 42 (numpy/TF için sabitlenmiş)  
+- **Kayıtlar:**  
+  - `best_cnn.keras` — en iyi doğrulukta kaydedilen model  
+  - `label_map.json` — sınıf indeks–isim eşlemeleri  
+  - `history.csv` — epoch bazlı metrikler  
+
+### 3.4. Callback’ler
+- **ModelCheckpoint:** `val_accuracy` en iyi olduğunda ağırlıkları kaydeder  
+- **ReduceLROnPlateau:** Kayıp iyileşmediğinde `lr` düşürülür  
+- **EarlyStopping:** `val_loss` durduğunda eğitim erken sonlanır (best weights geri yüklenir)
+
+---
+
+## 4. Değerlendirme
+
+### 4.1. Metrikler
+- **Accuracy/Loss eğrileri** (train/val)  
+- **Confusion Matrix**  
+- **Classification Report** (precision/recall/F1, sınıf bazlı)  
+- **Top-k** doğruluk (örn. top-5) desteği
+
+### 4.2. Grad-CAM
+Modelin karar verirken görselin **hangi bölgelerine odaklandığı** gösterilir.  
+Logo, ızgara ve far konturları gibi ayırt edici bölgeler ön plana çıkar.
+
+---
+
+## 5. Deney Tasarımı ve Tekrarlanabilirlik
+- **Ortam:** Kaggle (GPU)  
+- **Determinism:** `SEED = 42` (numpy/TF)  
+- **Veri işleme:** `tf.data` pipeline + prefetch  
+- **Çıktılar:** En iyi model, metrikler ve sınıf eşlemeleri dosyalanır
+
+Tek görsel tahmini için notebook fonksiyonu:
+```python
+predict_image("<gorsel_yolu>.jpg", top_k=5)
