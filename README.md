@@ -6,8 +6,7 @@ Proje; veri önişleme, veri çoğaltma (augmentation), **CNN** eğitimi, model 
 görselleştirmelerini içerir. İsteğe bağlı olarak **Transfer Learning** ve küçük bir
 **HPO (Hyperparameter Optimization)** denemesi de eklenebilir.
 
-> Final tesliminde notebook’un **Kaggle** üzerinde yayınlanması ve README’nin sonunda
-> Kaggle linkinin paylaşılması beklenir.
+
 
 ---
 
